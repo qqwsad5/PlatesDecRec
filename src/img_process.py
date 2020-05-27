@@ -50,7 +50,10 @@ for row in csv_reader:
         first = False
         continue
     # assert row[IMG_PATH] in img_list, print(row)
+    # 保存成json好用
+    # label_dic[row[IMG_PATH]] = [row[PLATE_NUM],row[COLOR]]
 
+    # 剪裁成训练用图片
     img_path = os.path.join(PATH_IMG,row[IMG_PATH])
     img = cv2.imdecode(np.fromfile(img_path, dtype=np.uint8), cv2.IMREAD_COLOR)
 
@@ -106,8 +109,12 @@ for row in csv_reader:
         cv2.waitKey(0)
     # exit()
 
+# label_dic = json.dumps(label_dic)
+# fp = open(os.path.join(PATH,"label/train"),'w')
+# fp.write(label_dic)
+# fp.close()
+
 
 print('finish')
 
-# # 将所有图片按照标签标注分割好
-# for img in img_list:
+

@@ -7,6 +7,8 @@ from PIL import Image, ImageTk
 import threading
 import time
 import numpy as np
+from detection import detection
+from recognition import recognition
 
 
 
@@ -18,7 +20,7 @@ class Surface(ttk.Frame):
 	thread = None
 	thread_run = False
 	camera = None
-	color_transform = {"green":("绿牌","#55FF55"), "yello":("黄牌","#FFFF00"), "blue":("蓝牌","#6666FF")}
+	color_transform = {"g":("绿牌","#55FF55"), "y":("黄牌","#FFFF00"), "b":("蓝牌","#6666FF")}
 		
 	def __init__(self, win):
 		ttk.Frame.__init__(self, win)
@@ -113,10 +115,18 @@ class Surface(ttk.Frame):
 			self.imgtk = self.get_imgtk(img_bgr)
 			self.image_ctl.configure(image=self.imgtk)
 
+			card_imgs,colors = detection(self.pic_path)
+			if len(card_imgs) == 0:
+				print("无法检测到车牌")
+				return
+			card_img = card_imgs[0]
+			color = colors[0]
 			# 预测并显示
-			r = ['川', 'A', 'A', '6', '6', '2', 'L']
-			roi = img_bgr
-			color = "blue"
+			try:
+				r = recognition(card_img, color)
+			except:
+				r = ['号码无法识别']
+			roi = card_img
 			# r, roi, color = self.predictor.predict(img_bgr)
 			self.show_roi(r, roi, color)
 

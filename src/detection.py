@@ -136,7 +136,7 @@ def detection_img(img_in):
         image, contours, hierarchy = cv2.findContours(img_edge2, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
 
     contours = [cnt for cnt in contours if cv2.contourArea(cnt) > Min_Area]
-    print('len(contours)', len(contours))
+    # print('len(contours)', len(contours))
 
     #一一排除不是车牌的矩形区域
     car_contours = []
@@ -159,12 +159,12 @@ def detection_img(img_in):
             # box = np.int0(box)
             # oldimg = cv2.drawContours(oldimg, [box], 0, (0, 0, 255), 2)
 
-    print(len(car_contours))
+    # print(len(car_contours))
     # cv2.imshow('img', oldimg)
     # cv2.waitKey(0)
     # exit()
 
-    print("精确定位")
+    # print("精确定位")
 
     card_imgs = []
     #将矩形旋转正来使用
@@ -197,6 +197,7 @@ def detection_img(img_in):
 
     #开始使用颜色定位，排除不是车牌的矩形，目前只识别蓝、绿、黄车牌
     out_imgs = []
+    colors = []
     for card_index,card_img in enumerate(card_imgs):
         green = yello = blue = black = white = 0
         card_img_hsv = cv2.cvtColor(card_img, cv2.COLOR_BGR2HSV)
@@ -236,8 +237,8 @@ def detection_img(img_in):
             # elif black + white >= card_img_count*0.7:#TODO
             #     color = "bw"
 
-        print(color)
-        print(blue, green, yello, black, white, card_img_count)
+        # print(color)
+        # print(blue, green, yello, black, white, card_img_count)
 
         w_out = 100
         h_out = 30
@@ -262,28 +263,29 @@ def detection_img(img_in):
             point_limit(rd)
 
             out_imgs.append(dst[int(lu[1]):int(rd[1]), int(lu[0]):int(rd[0])])
+            colors.append(color)
             # cv2.imshow("color", dst)
             # cv2.waitKey(0)
             # exit()
 
-    return out_imgs
+    return out_imgs, colors
 
 
 def detection(path):
     img = cv2.imdecode(np.fromfile(path, dtype=np.uint8), cv2.IMREAD_COLOR)
     rol, col = img.shape[:2]
     center = (rol/2,col/2)
-    rois = detection_img(img)
+    rois,colors = detection_img(img)
     if len(rois) == 0:
         rot_M = cv2.getRotationMatrix2D(center, 20, 1)
         rotated_img = cv2.warpAffine(img, rot_M, (col, rol))
-        rois = detection_img(rotated_img)
+        rois,colors = detection_img(rotated_img)
     if len(rois) == 0:
         rot_M = cv2.getRotationMatrix2D(center, -20, 1)
         rotated_img = cv2.warpAffine(img, rot_M, (col, rol))
-        rois = detection_img(rotated_img)
+        rois,colors = detection_img(rotated_img)
 
-    return rois
+    return rois,colors
 
 
 # rois = detection(PATH)
